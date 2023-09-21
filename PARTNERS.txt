@@ -1,0 +1,6 @@
+Yeabsira Mekonnen(ytm9yz)
+Nicholas Talton(nrt3xs)
+
+Yeabsira and Nicholas worked together on both the writecount() and setwritecount() functions.
+In addition to that, they also collectively contributed to test cases and a testfile that was used to test both writecount() and setwritecount().
+
