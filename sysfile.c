@@ -451,3 +451,18 @@ sys_writecount(void)
 {
   return total_writes;
 }
+
+int
+sys_setwritecount(void)
+{
+  int value;
+
+  if(argint(0, &value) < 0)
+    return -1;
+
+  if (value < 0){
+    value = 0;
+  }
+  total_writes = value;
+  return 0;
+}
