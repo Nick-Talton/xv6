@@ -102,3 +102,15 @@ int sys_shutdown(void)
   shutdown();
   return 0;
 }
+
+int sys_settickets(void)
+{
+  int n;
+  if(argint(0, &n) < 0)
+    return -1;
+  if(n > 100000 || n < 0)
+    return -1;
+
+  myproc()->tickets = n;
+  return 0;
+}

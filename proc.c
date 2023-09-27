@@ -142,6 +142,9 @@ userinit(void)
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
 
+  //first process should have 10 tickets
+  p->tickets = 10;
+
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
   // writes to be visible, and the lock is also needed
@@ -196,6 +199,7 @@ fork(void)
     np->state = UNUSED;
     return -1;
   }
+  np->tickets = curproc->tickets;
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
