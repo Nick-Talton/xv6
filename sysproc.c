@@ -119,10 +119,19 @@ int sys_settickets(void)
 int sys_getprocessesinfo(void)
 {
   struct processes_info * data;
+  struct processes_info * helperdata;
   if(argptr(0, (void*)&data, sizeof(*data)) < 0)
     return -1;
   
-  data = getprocessesinfohelper();
+  //populate the memory location the argument points to with requested data.
+  helperdata = getprocessesinfohelper();
+  data->num_processes = helperdata->num_processes;
+
+  for(int i=0; i<NPROC; i++){
+    data->pids[i] = helperdata->pids[i];
+    data->times_scheduled[i] = helperdata->times_scheduled[i];
+    data->tickets[i] = helperdata->tickets[i];
+  }
 
   return 0;
 }

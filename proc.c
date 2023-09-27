@@ -349,6 +349,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      p->times_scheduled++;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -543,7 +544,26 @@ procdump(void)
 struct processes_info* 
 getprocessesinfohelper(void){
   
-  //fill in the struc as specified by part 2 here.
+  //fill in the struct as specified by part 2
+  struct proc *p;
+  int i = 0;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    //fill data only for used processes
+    if(p->state != UNUSED){
+      data->num_processes += 1;
+      data->pids[i] = p->pid;
+      data->times_scheduled[i] = p->times_scheduled;
+      data->tickets[i] = p->tickets;
+
+      i++;
+    }
+
+  }
+  release(&ptable.lock);
+
+
   return data;
 }
 
