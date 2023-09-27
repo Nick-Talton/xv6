@@ -25,3 +25,4 @@
 #define SYS_writecount 24
 #define SYS_setwritecount 25
 #define SYS_settickets 26
+#define SYS_getprocessesinfo 27

@@ -6,6 +6,9 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "processesinfo.h"
+
+static struct processes_info * data;
 
 struct {
   struct spinlock lock;
@@ -536,3 +539,11 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+struct processes_info* 
+getprocessesinfohelper(void){
+  
+  //fill in the struc as specified by part 2 here.
+  return data;
+}
+

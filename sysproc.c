@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "processesinfo.h"
 
 int
 sys_fork(void)
@@ -112,5 +113,16 @@ int sys_settickets(void)
     return -1;
 
   myproc()->tickets = n;
+  return 0;
+}
+
+int sys_getprocessesinfo(void)
+{
+  struct processes_info * data;
+  if(argptr(0, (void*)&data, sizeof(*data)) < 0)
+    return -1;
+  
+  data = getprocessesinfohelper();
+
   return 0;
 }
