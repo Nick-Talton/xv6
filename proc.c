@@ -410,7 +410,7 @@ scheduler(void)
 
   //cprintf("in here");
   //make the ticket draw
-  tickets = getTickets();
+  
 
   // ticket_num = random_at_most(tickets);
   // cprintf("Random Ticket Num (1): %d\n", ticket_num);
@@ -422,12 +422,7 @@ scheduler(void)
   //   cprintf("Random Ticket Num outside of for loop: %d\n", ticket_num);
   // }
 
-
-  do{
-    ticket_num = random_at_most(tickets);
-    //cprintf("Random Ticket Num outside of for loop: %d\n", ticket_num);
-  } while (ticket_num != 0); //pick until it is not 0
-  //cprintf("Random Ticket Num outside of for loop: %d\n", ticket_num);
+  
   
   for(;;){
     // Enable interrupts on this processor.
@@ -436,11 +431,15 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
 
+    tickets = getTickets();
+
+    //generate the random_ticket
+    ticket_num = random_at_most((unsigned) tickets);
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       
       if(p->state != RUNNABLE)
         continue;
-      //ticket_num = random_at_most((unsigned) tickets);
 
       if (ticket_num > p->tickets)
       {
@@ -458,14 +457,6 @@ scheduler(void)
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
-
-      //make the ticket draw
-      tickets = getTickets();
-      do{
-        ticket_num = random_at_most(tickets);
-        //cprintf("Random Ticket Num in for loop: %d\n", ticket_num);
-      } while (ticket_num != 0); //pick until it is not 0
-
       
 
       // Process is done running for now.
