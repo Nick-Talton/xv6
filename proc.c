@@ -384,7 +384,7 @@ unsigned getTickets()
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE) totalTickets += p->tickets;
+      if(p->state == RUNNABLE) totalTickets += p->tickets;
   }
 
   return totalTickets;
@@ -408,21 +408,6 @@ scheduler(void)
   unsigned tickets = 0;
   unsigned ticket_num = 0;
 
-  //cprintf("in here");
-  //make the ticket draw
-  
-
-  // ticket_num = random_at_most(tickets);
-  // cprintf("Random Ticket Num (1): %d\n", ticket_num);
-  // ticket_num = random_at_most(tickets);
-  // cprintf("Random Ticket Num (2): %d\n", ticket_num);
-  
-  // while (ticket_num == 0){
-  //   ticket_num = random_at_most(tickets);
-  //   cprintf("Random Ticket Num outside of for loop: %d\n", ticket_num);
-  // }
-
-  
   
   for(;;){
     // Enable interrupts on this processor.
@@ -433,7 +418,6 @@ scheduler(void)
 
     tickets = getTickets();
 
-    //generate the random_ticket
     ticket_num = random_at_most((unsigned) tickets);
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -441,7 +425,7 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
-      if (ticket_num > p->tickets)
+      if (p->tickets == 0 || ticket_num >= p->tickets)
       {
         ticket_num -= p->tickets;
         continue;
@@ -462,6 +446,7 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      p = &ptable.proc[NPROC];
     }
     release(&ptable.lock);
 
