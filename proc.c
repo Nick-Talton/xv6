@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include "processesinfo.h"
 
-static struct processes_info * data;
+static struct processes_info data;
 
 struct {
   struct spinlock lock;
@@ -549,13 +549,14 @@ getprocessesinfohelper(void){
   int i = 0;
 
   acquire(&ptable.lock);
+  data.num_processes = 0;
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     //fill data only for used processes
     if(p->state != UNUSED){
-      data->num_processes += 1;
-      data->pids[i] = p->pid;
-      data->times_scheduled[i] = p->times_scheduled;
-      data->tickets[i] = p->tickets;
+      data.num_processes += 1;
+      data.pids[i] = p->pid;
+      data.times_scheduled[i] = p->times_scheduled;
+      data.tickets[i] = p->tickets;
 
       i++;
     }
@@ -564,6 +565,6 @@ getprocessesinfohelper(void){
   release(&ptable.lock);
 
 
-  return data;
+  return &data;
 }
 

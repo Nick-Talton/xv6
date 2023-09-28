@@ -187,6 +187,9 @@ UPROGS=\
 	_sh\
 	_stressfs\
 	_testfile\
+	_processlist\
+	_timewithtickets\
+	_lotterytest\
 	_usertests\
 	_wc\
 	_zombie\

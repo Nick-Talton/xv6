@@ -1,7 +1,7 @@
 #include "param.h"
-#include "processesinfo.h"
 struct stat;
 struct rtcdate;
+struct processes_info;
 
 // system calls
 int fork(void);
