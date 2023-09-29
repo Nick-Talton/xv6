@@ -8,6 +8,9 @@
 #include "spinlock.h"
 #include "processesinfo.h"
 
+#define RANDOM_MAX ((1u << 31u) - 1u)
+
+static unsigned random_seed = 1; //change this to get diff numbers
 static struct processes_info data;
 
 struct {
@@ -20,8 +23,64 @@ static struct proc *initproc;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
+unsigned next_random();
 
 static void wakeup1(void *chan);
+unsigned random_at_most(unsigned max);
+unsigned getTickets();
+
+unsigned lcg_parkmiller(unsigned *state)
+{
+    const unsigned N = 0x7fffffff;
+    const unsigned G = 48271u;
+
+    /*  
+        Indirectly compute state*G%N.
+
+        Let:
+          div = state/(N/G)
+          rem = state%(N/G)
+
+        Then:
+          rem + div*(N/G) == state
+          rem*G + div*(N/G)*G == state*G
+
+        Now:
+          div*(N/G)*G == div*(N - N%G) === -div*(N%G)  (mod N)
+
+        Therefore:
+          rem*G - div*(N%G) === state*G  (mod N)
+
+        Add N if necessary so that the result is between 1 and N-1.
+    */
+    unsigned div = *state / (N / G);  /* max : 2,147,483,646 / 44,488 = 48,271 */
+    unsigned rem = *state % (N / G);  /* max : 2,147,483,646 % 44,488 = 44,487 */
+
+    unsigned a = rem * G;        /* max : 44,487 * 48,271 = 2,147,431,977 */
+    unsigned b = div * (N % G);  /* max : 48,271 * 3,399 = 164,073,129 */
+
+    return *state = (a > b) ? (a - b) : (a + (N - b));
+}
+
+unsigned next_random() {
+    return lcg_parkmiller(&random_seed);
+}
+
+/* Return a random number from 0 to max */
+
+unsigned random_at_most(unsigned max)
+{
+  unsigned num_bins = (max + 1);
+  unsigned num_rand = RANDOM_MAX + 1;
+  unsigned bin_size = num_rand / num_bins;
+  unsigned defect = num_rand % num_bins;
+  unsigned retval;
+  unsigned x; do {
+    x = next_random();
+  } while (num_rand - defect <= x);
+  retval = x/bin_size;
+  return retval;
+}
 
 void
 pinit(void)
@@ -318,6 +377,20 @@ wait(void)
   }
 }
 
+//obtain the number of tickets total for right now
+unsigned getTickets()
+{
+  unsigned totalTickets = 0;
+  struct proc *p;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state == RUNNABLE) totalTickets += p->tickets;
+  }
+
+  return totalTickets;
+  
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -332,6 +405,9 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  unsigned tickets = 0;
+  unsigned ticket_num = 0;
+
   
   for(;;){
     // Enable interrupts on this processor.
@@ -339,9 +415,21 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+    tickets = getTickets();
+
+    ticket_num = random_at_most((unsigned) tickets);
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      
       if(p->state != RUNNABLE)
         continue;
+
+      if (p->tickets == 0 || ticket_num >= p->tickets)
+      {
+        ticket_num -= p->tickets;
+        continue;
+      } 
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -353,10 +441,12 @@ scheduler(void)
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
+      
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      p = &ptable.proc[NPROC];
     }
     release(&ptable.lock);
 
