@@ -1,6 +1,7 @@
 Yeabsira Mekonnen(ytm9yz)
 Nicholas Talton(nrt3xs)
 
-Yeabsira and Nicholas worked together on both the writecount() and setwritecount() functions.
-In addition to that, they also collectively contributed to test cases and a testfile that was used to test both writecount() and setwritecount().
+Yeabsira and Nicholas worked together to create the lottery scheduler. This assignment was split apart into 3 different parts.
+The parts were split such that Yeabsira developed the settickets system call and then worked with Nicholas on the second and 3rd part (getting process information and lottery support).
+In addition to that, they also collectively contributed to debugging and offering insight on each others code branches. The lottery scheduler initially only passed 87 test cases but after reorienting logic with the random ticket picker all test cases eventually passed.
 
